@@ -16,6 +16,7 @@ from .ops_views import (
     StartChatView,
     TenantUsersView,
 )
+from .sales_agents import ApexSalesAgentDetailView, ApexSalesAgentListView
 from .views import (
     ApproveQuarterlyPaymentView,
     ApproveSetupPaymentView,
@@ -30,6 +31,8 @@ from .views import (
 )
 
 urlpatterns = [
+    path("sales-agents/", ApexSalesAgentListView.as_view(), name="sales-agents"),
+    path("sales-agents/<int:pk>/", ApexSalesAgentDetailView.as_view(), name="sales-agent-detail"),
     path("summary/", DashboardSummaryView.as_view(), name="dashboard-summary"),
     path("analytics/", AnalyticsSummaryView.as_view(), name="analytics-summary"),
     path("signups/", SignupsPipelineView.as_view(), name="signups-pipeline"),

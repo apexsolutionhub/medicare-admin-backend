@@ -45,6 +45,14 @@ class TenantAccount(models.Model):
     billing_notes = models.TextField(blank=True, default="")
     modules = models.JSONField(default=list, blank=True)
     fees_manually_set = models.BooleanField(default=False)
+    sales_agent = models.ForeignKey(
+        "SalesAgent",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tenants",
+        db_constraint=False,
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -239,3 +247,22 @@ class ApexAuditLog(models.Model):
     class Meta:
         db_table = "tenants_apexauditlog"
         ordering = ["-created_at"]
+
+
+class SalesAgent(models.Model):
+    display_name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=64, blank=True, default="")
+    email = models.EmailField(blank=True, default="")
+    city = models.CharField(max_length=128, blank=True, default="")
+    notes = models.TextField(blank=True, default="")
+    is_active = models.BooleanField(default=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed = False
+        db_table = "tenants_salesagent"
+        ordering = ["display_name"]
+
+    def __str__(self):
+        return self.display_name

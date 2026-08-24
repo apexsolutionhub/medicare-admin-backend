@@ -31,6 +31,8 @@ class TenantSerializer(serializers.ModelSerializer):
     pharmacist_count = serializers.IntegerField(read_only=True, required=False)
     staff_count = serializers.IntegerField(read_only=True, required=False)
     manager_username = serializers.CharField(read_only=True, required=False, default="")
+    sales_agent_id = serializers.IntegerField(source="sales_agent_id", read_only=True)
+    sales_agent_name = serializers.SerializerMethodField()
 
     class Meta:
         model = TenantAccount
@@ -65,6 +67,8 @@ class TenantSerializer(serializers.ModelSerializer):
             "pharmacist_count",
             "staff_count",
             "manager_username",
+            "sales_agent_id",
+            "sales_agent_name",
         ]
         read_only_fields = [
             "id",
@@ -84,7 +88,13 @@ class TenantSerializer(serializers.ModelSerializer):
             "pharmacist_count",
             "staff_count",
             "manager_username",
+            "sales_agent_id",
+            "sales_agent_name",
         ]
+
+    def get_sales_agent_name(self, obj):
+        agent = getattr(obj, "sales_agent", None)
+        return getattr(agent, "display_name", "") if agent else ""
 
 
 class PaymentSubmissionSerializer(serializers.ModelSerializer):
@@ -132,6 +142,7 @@ class TenantCreateSerializer(serializers.Serializer):
         default=DEFAULT_MODULES,
     )
     waive_setup_fee = serializers.BooleanField(required=False, default=False)
+    sales_agent_id = serializers.IntegerField(required=False, allow_null=True)
 
     def validate_pharmacy_tin(self, value):
         tin = (value or "").strip()
@@ -161,6 +172,9 @@ class TenantCreateSerializer(serializers.Serializer):
         yearly_fee = int(validated_data.get("yearly_fee_etb", DEFAULT_YEARLY_FEE_ETB))
         modules = validated_data.get("modules") or list(DEFAULT_MODULES)
         waive = bool(validated_data.get("waive_setup_fee"))
+        from .sales_agents import resolve_sales_agent
+
+        sales_agent = resolve_sales_agent(validated_data.get("sales_agent_id"))
 
         user = User(username=validated_data["manager_username"])
         user.set_password(validated_data["manager_password"])
@@ -198,6 +212,7 @@ class TenantCreateSerializer(serializers.Serializer):
                 if (waive or setup_fee <= 0)
                 else now + timedelta(days=14)
             ),
+            sales_agent=sales_agent,
         )
         return tenant
 

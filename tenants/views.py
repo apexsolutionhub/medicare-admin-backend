@@ -31,7 +31,7 @@ class TenantSerializer(serializers.ModelSerializer):
     pharmacist_count = serializers.IntegerField(read_only=True, required=False)
     staff_count = serializers.IntegerField(read_only=True, required=False)
     manager_username = serializers.CharField(read_only=True, required=False, default="")
-    sales_agent_id = serializers.IntegerField(source="sales_agent_id", read_only=True)
+    sales_agent_id = serializers.IntegerField(read_only=True)
     sales_agent_name = serializers.SerializerMethodField()
 
     class Meta:
